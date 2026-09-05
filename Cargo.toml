@@ -1,0 +1,10 @@
+[package]
+name = "hack_olc"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+olc_pixel_game_engine = "0.6.0"
+anyhow = "1.0.86"
+thiserror = "1.0.61"
+web-time = "1.1.0"
