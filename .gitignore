@@ -1,3 +1,5 @@
 /target
 
 .superpowers/
+cpp/build/
+cpp/**/.vs/
