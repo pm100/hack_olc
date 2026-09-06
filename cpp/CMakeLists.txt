@@ -9,6 +9,7 @@ add_library(hack_engine STATIC
     src/screen.cpp
     src/keyboard.cpp
     src/hack_engine.cpp
+    src/code_loader.cpp
 )
 target_include_directories(hack_engine PUBLIC src third_party)
 

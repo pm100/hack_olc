@@ -1,4 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
+#include <fstream>
+#include <sstream>
 
 TEST_CASE("build infrastructure works", "[smoke]") {
     REQUIRE(1 + 1 == 2);
@@ -215,4 +217,110 @@ TEST_CASE("disassemble_range walks consecutive ROM words", "[engine][disasm]") {
     REQUIRE(std::get<2>(lines[0]) == "@2");
     REQUIRE(std::get<2>(lines[1]) == "D=A");
     REQUIRE(std::get<2>(lines[2]) == "D;JMP");
+}
+
+namespace {
+
+std::string read_repo_file(const char* relative_path) {
+    std::string path = std::string(HACK_OLC_REPO_ROOT) + "/" + relative_path;
+    std::ifstream file(path, std::ios::binary);
+    if (!file) {
+        throw std::runtime_error("can't open " + path);
+    }
+    std::ostringstream ss;
+    ss << file.rdbuf();
+    return ss.str();
+}
+
+hack::StopReason run_to_halt(hack::HackEngine& engine) {
+    using namespace std::chrono_literals;
+    while (true) {
+        auto stop = engine.execute_instructions(10s);
+        switch (stop) {
+            case hack::StopReason::SysHalt:
+            case hack::StopReason::HardLoop:
+                return stop;
+            case hack::StopReason::RefreshUI:
+                continue;
+            default:
+                FAIL("unexpected stop reason");
+        }
+    }
+}
+
+} // namespace
+
+TEST_CASE("load_file parses a hackem-format binary", "[loader]") {
+    const char* binfile =
+        "hackem v1.0 0x0000\n"
+        "ROM@0000\n"
+        "0002\n"
+        "8c10\n"
+        "0011\n"
+        "8308\n"
+        "000a\n"
+        "8304\n"
+        "0003\n"
+        "8c10\n"
+        "0010\n"
+        "8308\n"
+        "000a\n"
+        "8307\n"
+        "RAM@0000\n"
+        "1234\n"
+        "2345\n"
+        "RAM@3333\n"
+        "abcd\n"
+        "ffff";
+
+    hack::HackEngine hack;
+    hack.load_file(binfile);
+
+    REQUIRE(hack.rom[0] == 0x0002);
+    REQUIRE(hack.rom[1] == 0x8c10);
+}
+
+TEST_CASE("load_file parses a raw .hack ASCII binary and writes the screen", "[loader]") {
+    // Minimal .hack binary: @16384; M=-1; @16416; M=-1; @4; 0;JMP
+    const char* hack_binary =
+        "0100000000000000\n"
+        "1110111010001000\n"
+        "0100000000100000\n"
+        "1110111010001000\n"
+        "0000000000000100\n"
+        "1110101010000111";
+
+    hack::HackEngine engine;
+    engine.load_file(hack_binary);
+    REQUIRE(engine.rom_words_loaded == 6);
+
+    auto result = run_to_halt(engine);
+    REQUIRE(result == hack::StopReason::HardLoop);
+    REQUIRE(engine.ram[0x4000] == 0xFFFF);
+    REQUIRE(engine.ram[0x4020] == 0xFFFF);
+}
+
+TEST_CASE("a real C program (factorial+fib) runs to Sys.halt with the right result", "[loader]") {
+    hack::HackEngine engine;
+    std::string content = read_repo_file("tests/data/test2.hackem");
+    engine.load_file(content);
+
+    auto result = run_to_halt(engine);
+    REQUIRE(result == hack::StopReason::SysHalt);
+    REQUIRE(static_cast<int16_t>(engine.ram[256]) == 133);
+}
+
+TEST_CASE("hello.hackem halts and leaves a non-blank screen", "[loader]") {
+    hack::HackEngine engine;
+    std::string content = read_repo_file("hello.hackem");
+    engine.load_file(content);
+
+    auto result = run_to_halt(engine);
+    REQUIRE(result == hack::StopReason::SysHalt);
+
+    size_t nonzero_count = 0;
+    for (size_t offset = 0x4000; offset < 0x6000; ++offset) {
+        if (engine.ram[offset] != 0) ++nonzero_count;
+    }
+    REQUIRE(nonzero_count > 0);
 }
