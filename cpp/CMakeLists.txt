@@ -8,6 +8,7 @@ add_library(hack_engine STATIC
     src/pge_impl.cpp
     src/screen.cpp
     src/keyboard.cpp
+    src/hack_engine.cpp
 )
 target_include_directories(hack_engine PUBLIC src third_party)
 
