@@ -6,15 +6,16 @@ namespace hack {
 namespace {
 
 std::string format_reason(RuntimeErrorReason reason, std::optional<uint16_t> address) {
+    auto addr_str = [&]() { return address ? std::to_string(*address) : std::string("<unknown>"); };
     switch (reason) {
         case RuntimeErrorReason::InvalidInstruction:
             return "Invalid instruction";
         case RuntimeErrorReason::InvalidReadAddress:
-            return "Invalid RAM read address " + std::to_string(*address);
+            return "Invalid RAM read address " + addr_str();
         case RuntimeErrorReason::InvalidWriteAddress:
-            return "Invalid RAM write address " + std::to_string(*address);
+            return "Invalid RAM write address " + addr_str();
         case RuntimeErrorReason::InvalidPC:
-            return "Invalid instruction address " + std::to_string(*address);
+            return "Invalid instruction address " + addr_str();
     }
     return "Unknown error";
 }
