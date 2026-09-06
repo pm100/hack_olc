@@ -55,3 +55,10 @@ TEST_CASE("clear resets every pixel", "[screen]") {
     screen.clear();
     REQUIRE_FALSE(screen.get_pixel(10, 10));
 }
+
+#include "keyboard.hpp"
+
+TEST_CASE("keyboard starts with no key held", "[keyboard]") {
+    hack::HackKeyboard kb;
+    REQUIRE(kb.read() == 0);
+}

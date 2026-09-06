@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_library(hack_engine STATIC
     src/pge_impl.cpp
     src/screen.cpp
+    src/keyboard.cpp
 )
 target_include_directories(hack_engine PUBLIC src third_party)
 
