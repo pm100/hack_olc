@@ -195,3 +195,24 @@ TEST_CASE("set_ram/get_ram keep the screen in sync with RAM writes", "[engine]")
     engine.set_ram(next_row, 0x8000);
     REQUIRE(engine.screen.get_pixel(15, 1));
 }
+
+TEST_CASE("disassemble_one decodes A- and C-instructions", "[engine][disasm]") {
+    using hack::HackEngine;
+    REQUIRE(HackEngine::disassemble_one(0x0002) == "@2");
+    REQUIRE(HackEngine::disassemble_one(0x8c10) == "D=A");
+    REQUIRE(HackEngine::disassemble_one(0xe307) == "D;JMP");
+}
+
+TEST_CASE("disassemble_range walks consecutive ROM words", "[engine][disasm]") {
+    hack::HackEngine cpu;
+    cpu.rom[0] = 0x0002;
+    cpu.rom[1] = 0x8c10;
+    cpu.rom[2] = 0xe307;
+
+    auto lines = cpu.disassemble_range(0, 3);
+    REQUIRE(lines.size() == 3);
+    REQUIRE(std::get<0>(lines[0]) == 0);
+    REQUIRE(std::get<2>(lines[0]) == "@2");
+    REQUIRE(std::get<2>(lines[1]) == "D=A");
+    REQUIRE(std::get<2>(lines[2]) == "D;JMP");
+}

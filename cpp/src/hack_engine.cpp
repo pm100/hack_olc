@@ -256,4 +256,105 @@ void HackEngine::remove_all_watchpoints() {
     watch_points.clear();
 }
 
+std::string HackEngine::disassemble_one(uint16_t word) {
+    if ((word >> 15) == 0) {
+        // A-instruction: @value
+        return "@" + std::to_string(word & 0x7FFF);
+    }
+
+    // C-instruction: dest=comp;jump
+    uint16_t a_bit = (word >> 12) & 0x1;
+    uint16_t comp = (word >> 6) & 0x3F;
+    uint16_t dest = (word >> 3) & 0x7;
+    uint16_t jump = word & 0x7;
+
+    std::string comp_str;
+    if (a_bit == 0) {
+        switch (comp) {
+            case 0b101010: comp_str = "0"; break;
+            case 0b111111: comp_str = "1"; break;
+            case 0b111010: comp_str = "-1"; break;
+            case 0b001100: comp_str = "D"; break;
+            case 0b110000: comp_str = "A"; break;
+            case 0b001101: comp_str = "!D"; break;
+            case 0b110001: comp_str = "!A"; break;
+            case 0b001111: comp_str = "-D"; break;
+            case 0b110011: comp_str = "-A"; break;
+            case 0b011111: comp_str = "D+1"; break;
+            case 0b110111: comp_str = "A+1"; break;
+            case 0b001110: comp_str = "D-1"; break;
+            case 0b110010: comp_str = "A-1"; break;
+            case 0b000010: comp_str = "D+A"; break;
+            case 0b010011: comp_str = "D-A"; break;
+            case 0b000111: comp_str = "A-D"; break;
+            case 0b000000: comp_str = "D&A"; break;
+            case 0b010101: comp_str = "D|A"; break;
+            default: comp_str = "???"; break;
+        }
+    } else {
+        switch (comp) {
+            case 0b101010: comp_str = "0"; break;
+            case 0b111111: comp_str = "1"; break;
+            case 0b111010: comp_str = "-1"; break;
+            case 0b001100: comp_str = "D"; break;
+            case 0b110000: comp_str = "M"; break;
+            case 0b001101: comp_str = "!D"; break;
+            case 0b110001: comp_str = "!M"; break;
+            case 0b001111: comp_str = "-D"; break;
+            case 0b110011: comp_str = "-M"; break;
+            case 0b011111: comp_str = "D+1"; break;
+            case 0b110111: comp_str = "M+1"; break;
+            case 0b001110: comp_str = "D-1"; break;
+            case 0b110010: comp_str = "M-1"; break;
+            case 0b000010: comp_str = "D+M"; break;
+            case 0b010011: comp_str = "D-M"; break;
+            case 0b000111: comp_str = "M-D"; break;
+            case 0b000000: comp_str = "D&M"; break;
+            case 0b010101: comp_str = "D|M"; break;
+            default: comp_str = "???"; break;
+        }
+    }
+
+    std::string dest_str;
+    switch (dest) {
+        case 0b000: dest_str = ""; break;
+        case 0b001: dest_str = "M="; break;
+        case 0b010: dest_str = "D="; break;
+        case 0b011: dest_str = "MD="; break;
+        case 0b100: dest_str = "A="; break;
+        case 0b101: dest_str = "AM="; break;
+        case 0b110: dest_str = "AD="; break;
+        case 0b111: dest_str = "AMD="; break;
+        default: break;
+    }
+
+    std::string jump_str;
+    switch (jump) {
+        case 0b000: jump_str = ""; break;
+        case 0b001: jump_str = ";JGT"; break;
+        case 0b010: jump_str = ";JEQ"; break;
+        case 0b011: jump_str = ";JGE"; break;
+        case 0b100: jump_str = ";JLT"; break;
+        case 0b101: jump_str = ";JNE"; break;
+        case 0b110: jump_str = ";JLE"; break;
+        case 0b111: jump_str = ";JMP"; break;
+        default: break;
+    }
+
+    return dest_str + comp_str + jump_str;
+}
+
+std::vector<std::tuple<uint16_t, uint16_t, std::string>> HackEngine::disassemble_range(
+    uint16_t start, uint16_t count) const {
+    std::vector<std::tuple<uint16_t, uint16_t, std::string>> result;
+    result.reserve(count);
+    for (uint16_t i = 0; i < count; ++i) {
+        uint16_t addr = static_cast<uint16_t>(start + i);
+        if (static_cast<size_t>(addr) >= rom.size()) break;
+        uint16_t word = rom[addr];
+        result.emplace_back(addr, word, disassemble_one(word));
+    }
+    return result;
+}
+
 } // namespace hack
