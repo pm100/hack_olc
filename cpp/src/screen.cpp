@@ -2,13 +2,17 @@
 
 #include "olcPixelGameEngine.h"
 
+#include <cassert>
+
 namespace hack {
 
 void HackScreen::write_word(std::size_t offset, uint16_t value) {
+    assert(offset < WORD_COUNT);
     words_[offset] = value;
 }
 
 uint16_t HackScreen::read_word(std::size_t offset) const {
+    assert(offset < WORD_COUNT);
     return words_[offset];
 }
 

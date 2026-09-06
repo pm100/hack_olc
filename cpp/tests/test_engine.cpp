@@ -1,12 +1,11 @@
 #include <catch2/catch_test_macros.hpp>
+
+#include "hack_engine.hpp"
+#include "keyboard.hpp"
+#include "screen.hpp"
+
 #include <fstream>
 #include <sstream>
-
-TEST_CASE("build infrastructure works", "[smoke]") {
-    REQUIRE(1 + 1 == 2);
-}
-
-#include "screen.hpp"
 
 TEST_CASE("screen pixels round-trip through set/get", "[screen]") {
     hack::HackScreen screen;
@@ -58,14 +57,10 @@ TEST_CASE("clear resets every pixel", "[screen]") {
     REQUIRE_FALSE(screen.get_pixel(10, 10));
 }
 
-#include "keyboard.hpp"
-
 TEST_CASE("keyboard starts with no key held", "[keyboard]") {
     hack::HackKeyboard kb;
     REQUIRE(kb.read() == 0);
 }
-
-#include "hack_engine.hpp"
 
 namespace {
 
@@ -316,6 +311,45 @@ TEST_CASE("hello.hackem halts and leaves a non-blank screen", "[loader]") {
     engine.load_file(content);
 
     auto result = run_to_halt(engine);
+    REQUIRE(result == hack::StopReason::SysHalt);
+
+    size_t nonzero_count = 0;
+    for (size_t offset = 0x4000; offset < 0x6000; ++offset) {
+        if (engine.ram[offset] != 0) ++nonzero_count;
+    }
+    REQUIRE(nonzero_count > 0);
+
+    // engine.screen must mirror engine.ram[0x4000..0x6000) exactly, proven
+    // here against a real program's output rather than hand-written
+    // set_ram pokes (see the set_ram/get_ram test above for that case).
+    for (size_t offset = 0; offset < 0x2000; ++offset) {
+        REQUIRE(engine.screen.read_word(offset) == engine.ram[0x4000 + offset]);
+    }
+}
+
+TEST_CASE("execute_count alone runs hello.hackem to completion, like main.cpp does", "[engine]") {
+    // main.cpp's only execution entry point is execute_count, called in a
+    // loop with a fixed chunk size and no wall-clock check — mirror that
+    // exact usage pattern here instead of execute_instructions.
+    hack::HackEngine engine;
+    std::string content = read_repo_file("hello.hackem");
+    engine.load_file(content);
+
+    // Keyboard round-trip: main.cpp assigns engine.keyboard every frame to
+    // feed the keyboard register to the CPU; confirm it's readable back via
+    // the memory-mapped address the CPU would use (RAM[0x6000]).
+    engine.keyboard = 42;
+    REQUIRE(engine.get_ram(0x6000) == 42);
+    engine.keyboard = 0;
+
+    constexpr uint32_t chunk_size = 500;
+    hack::StopReason result = hack::StopReason::RefreshUI;
+    for (int guard = 0; guard < 1'000'000; ++guard) {
+        result = engine.execute_count(chunk_size);
+        if (result == hack::StopReason::SysHalt || result == hack::StopReason::HardLoop) {
+            break;
+        }
+    }
     REQUIRE(result == hack::StopReason::SysHalt);
 
     size_t nonzero_count = 0;

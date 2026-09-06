@@ -20,6 +20,14 @@ cmake --build cpp/build --config Release
 ctest --test-dir cpp/build -C Release --output-on-failure
 ```
 
+The test suite reads `hello.hackem` and `tests/data/test2.hackem` directly
+from the repo root at run time, via a configure-time `HACK_OLC_REPO_ROOT`
+path baked into the test binary. This means moving `cpp/` out of the repo,
+or moving the whole repo after configuring, will break the tests. (The
+built `hack_olc.exe` has a related but separate dependency: the build's
+post-build step copies `hello.hackem` next to the executable so it has a
+default ROM to run.)
+
 ## Run
 
 ```powershell
@@ -29,19 +37,31 @@ ctest --test-dir cpp/build -C Release --output-on-failure
 With no argument, runs the bundled `hello.hackem`. Numpad +/- doubles/halves
 the emulated clock speed live.
 
+## Error Handling
+
+Two distinct exception types are in play, and a caller wanting to catch
+both needs two catch clauses: runtime CPU errors from `HackEngine::step`
+(and anything that calls it, including `execute_instructions` and
+`execute_count`), `get_ram`, and `set_ram` throw `hack::HackRuntimeError`;
+`HackEngine::load_file` throws plain `std::runtime_error` on malformed ROM
+data.
+
 ## Known Issues
 
-On at least one development machine (Intel UHD 630 + a DisplayLink USB
-display adapter installed system-wide), the built application's window
-opens and runs correctly internally — the CPU executes, produces the
-correct screen buffer, and reaches HALTED as expected — but the window's
-client area renders solid white with no visible pixels. This is believed
-to be a graphics-driver/OpenGL-compatibility issue in the vendored
-`olcPixelGameEngine.h`, not a defect in the ported emulator logic (all
-17 tests pass, and direct engine-state inspection confirms correct
-behavior). If you hit this, try a different GPU/monitor/driver, or treat
-it as a follow-up investigation into `pge_impl.cpp`'s WGL/OpenGL context
-setup.
+GUI rendering has not been visually confirmed working on any machine
+tried so far. On every development machine tried to date (including one
+with an Intel UHD 630 + a DisplayLink USB display adapter installed
+system-wide), the built application's window opens and runs correctly
+internally — the CPU executes, produces the correct screen buffer, and
+reaches HALTED as expected — but the window's client area renders solid
+white with no visible pixels. This is believed to be a
+graphics-driver/OpenGL-compatibility issue in the vendored
+`olcPixelGameEngine.h`, not a defect in the ported emulator logic.
+Correctness of the emulator core itself is established only via the
+automated test suite and direct engine-state inspection — not via visual
+confirmation of the rendered window. If you hit this, try a different
+GPU/monitor/driver, or treat it as a follow-up investigation into
+`pge_impl.cpp`'s WGL/OpenGL context setup.
 
 ## Layout
 

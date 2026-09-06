@@ -1,10 +1,8 @@
 // hack_olc — the Hack CPU emulator, driven by olcPixelGameEngine for the
 // screen and keyboard. Direct port of the Rust hack_olc main.rs.
 //
-// This is the only file that includes olcPixelGameEngine.h without
-// OLC_PGE_APPLICATION defined here — the implementation lives in
-// pge_impl.cpp (see the plan's "Single olcPixelGameEngine implementation
-// TU rule").
+// This file includes the header for declarations only (see pge_impl.cpp
+// for where the implementation is compiled in, via OLC_PGE_APPLICATION).
 #include "olcPixelGameEngine.h"
 
 #include "hack_engine.hpp"
@@ -164,20 +162,25 @@ private:
 };
 
 int main(int argc, char* argv[]) {
-    std::optional<std::string> rom_path;
-    if (argc > 1) {
-        rom_path = std::string(argv[1]);
-    }
+    try {
+        std::optional<std::string> rom_path;
+        if (argc > 1) {
+            rom_path = std::string(argv[1]);
+        }
 
-    std::filesystem::path exe_dir = std::filesystem::absolute(argv[0]).parent_path();
+        std::filesystem::path exe_dir = std::filesystem::absolute(argv[0]).parent_path();
 
-    HackApp app(rom_path, exe_dir);
-    // olc::rcode is an unscoped enum (enum rcode { FAIL=0, OK=1, NO_FILE=-1 })
-    // declared inside namespace olc; `olc::rcode::OK` is valid C++11+ syntax
-    // for it (the header itself uses this exact form), so this compiles as
-    // written against the vendored header.
-    if (app.Construct(hack::SCREEN_WIDTH, hack::SCREEN_HEIGHT + 16, 2, 2) == olc::rcode::OK) {
-        app.Start();
+        HackApp app(rom_path, exe_dir);
+        // olc::rcode is an unscoped enum (enum rcode { FAIL=0, OK=1, NO_FILE=-1 })
+        // declared inside namespace olc; `olc::rcode::OK` is valid C++11+ syntax
+        // for it (the header itself uses this exact form), so this compiles as
+        // written against the vendored header.
+        if (app.Construct(hack::SCREEN_WIDTH, hack::SCREEN_HEIGHT + 16, 2, 2) == olc::rcode::OK) {
+            app.Start();
+        }
+    } catch (const std::exception& e) {
+        std::fprintf(stderr, "hack_olc: %s\n", e.what());
+        return 1;
     }
     return 0;
 }

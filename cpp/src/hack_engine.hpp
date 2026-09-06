@@ -71,7 +71,7 @@ public:
     HackScreen screen;
     uint16_t keyboard = 0;
 
-    // Implemented in code_loader.cpp (Task 6).
+    // Implemented in code_loader.cpp.
     void load_file(const std::string& bin);
 
     /// Rebuild `screen` from the raw RAM contents. Needed after bulk RAM
@@ -101,7 +101,7 @@ public:
     void remove_watchpoint(uint16_t address);
     void remove_all_watchpoints();
 
-    // Implemented in hack_engine.cpp (disassembler part, Task 5).
+    // Implemented later in this file.
     static std::string disassemble_one(uint16_t word);
     std::vector<std::tuple<uint16_t, uint16_t, std::string>> disassemble_range(
         uint16_t start, uint16_t count) const;

@@ -25,6 +25,6 @@ target_link_libraries(hack_olc PRIVATE hack_engine)
 
 add_custom_command(TARGET hack_olc POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_SOURCE_DIR}/../hello.hackem
+        ${CMAKE_CURRENT_SOURCE_DIR}/../hello.hackem
         $<TARGET_FILE_DIR:hack_olc>/hello.hackem
 )
