@@ -15,6 +15,12 @@ target_include_directories(hack_engine PUBLIC src third_party)
 
 if (WIN32)
     target_link_libraries(hack_engine PUBLIC user32 gdi32 opengl32 gdiplus Shlwapi dwmapi)
+elseif(UNIX AND NOT APPLE)
+    find_package(OpenGL REQUIRED)
+    find_package(PNG REQUIRED)
+    find_package(Threads REQUIRED)
+    find_package(X11 REQUIRED)
+    target_link_libraries(hack_engine PUBLIC OpenGL::GL PNG::PNG Threads::Threads X11::X11)
 endif()
 
 enable_testing()

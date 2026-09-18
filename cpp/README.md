@@ -1,7 +1,7 @@
 # hack_olc (C++)
 
-Native C++ port of the Rust `hack_olc` Hack CPU emulator, using
-olcPixelGameEngine directly. The Rust project at the repo root is the
+Native C++ port of the Rust `hack_olc` Hack CPU emulator, now upgraded to
+olcPixelGameEngine3 directly. The Rust project at the repo root is the
 original implementation and is kept unmodified alongside this one.
 
 ## Build
@@ -56,7 +56,7 @@ internally — the CPU executes, produces the correct screen buffer, and
 reaches HALTED as expected — but the window's client area renders solid
 white with no visible pixels. This is believed to be a
 graphics-driver/OpenGL-compatibility issue in the vendored
-`olcPixelGameEngine.h`, not a defect in the ported emulator logic.
+`olcPixelGameEngine3.h`, not a defect in the ported emulator logic.
 Correctness of the emulator core itself is established only via the
 automated test suite and direct engine-state inspection — not via visual
 confirmation of the rendered window. If you hit this, try a different
@@ -73,8 +73,8 @@ GPU/monitor/driver, or treat it as a follow-up investigation into
 - `src/main.cpp` — the `olc::PixelGameEngine`-derived application.
 - `src/pge_impl.cpp` — the single translation unit compiling in
   olcPixelGameEngine's implementation (see comment in that file before
-  adding `OLC_PGE_APPLICATION` anywhere else).
-- `third_party/olcPixelGameEngine.h` — vendored single-header library.
+  adding `OLC_PGE3_APPLICATION` anywhere else).
+- `third_party/olcPixelGameEngine3.h` — vendored single-header library.
 - `tests/test_engine.cpp` — Catch2 test suite.
 
 See `../docs/superpowers/specs/2026-09-05-cpp-port-design.md` for the full

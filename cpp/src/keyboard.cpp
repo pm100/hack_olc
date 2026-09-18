@@ -2,7 +2,7 @@
 
 #include <cctype>
 
-#include "olcPixelGameEngine.h"
+#include "olcPixelGameEngine3.h"
 
 namespace hack {
 namespace {
@@ -74,10 +74,10 @@ const SpecialKey SPECIALS[] = {
 } // namespace
 
 void HackKeyboard::poll(olc::PixelGameEngine& pge) {
-    bool shift = pge.GetKey(olc::Key::SHIFT).bHeld;
+    bool shift = pge.GetKeyboard().GetKey(olc::Key::SHIFT).bHeld;
 
     for (const auto& lk : LETTERS) {
-        if (pge.GetKey(lk.key).bHeld) {
+        if (pge.GetKeyboard().GetKey(lk.key).bHeld) {
             current_ = shift
                 ? static_cast<uint16_t>(std::toupper(static_cast<unsigned char>(lk.lower)))
                 : static_cast<uint16_t>(lk.lower);
@@ -86,14 +86,14 @@ void HackKeyboard::poll(olc::PixelGameEngine& pge) {
     }
 
     for (const auto& dk : DIGITS) {
-        if (pge.GetKey(dk.key).bHeld) {
+        if (pge.GetKeyboard().GetKey(dk.key).bHeld) {
             current_ = shift ? static_cast<uint16_t>(dk.symbol) : static_cast<uint16_t>(dk.digit);
             return;
         }
     }
 
     for (const auto& sk : SPECIALS) {
-        if (pge.GetKey(sk.key).bHeld) {
+        if (pge.GetKeyboard().GetKey(sk.key).bHeld) {
             current_ = sk.code;
             return;
         }

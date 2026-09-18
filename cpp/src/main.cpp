@@ -2,8 +2,8 @@
 // screen and keyboard. Direct port of the Rust hack_olc main.rs.
 //
 // This file includes the header for declarations only (see pge_impl.cpp
-// for where the implementation is compiled in, via OLC_PGE_APPLICATION).
-#include "olcPixelGameEngine.h"
+// for where the implementation is compiled in, via OLC_PGE3_APPLICATION).
+#include "olcPixelGameEngine3.h"
 
 #include "hack_engine.hpp"
 #include "keyboard.hpp"
@@ -81,10 +81,10 @@ public:
         // Clamped well above MAX_INSTRUCTIONS_PER_FRAME so the displayed
         // number always reflects what's actually running.
         float max_speed_hz = static_cast<float>(MAX_INSTRUCTIONS_PER_FRAME) / MAX_FRAME_TIME;
-        if (GetKey(olc::Key::NP_ADD).bPressed) {
+        if (GetKeyboard().GetKey(olc::Key::NP_ADD).bPressed) {
             speed_hz_ = std::min(speed_hz_ * 2.0f, max_speed_hz);
         }
-        if (GetKey(olc::Key::NP_SUB).bPressed) {
+        if (GetKeyboard().GetKey(olc::Key::NP_SUB).bPressed) {
             speed_hz_ = std::max(speed_hz_ / 2.0f, 1.0f);
         }
 
@@ -136,7 +136,7 @@ public:
             }
         }
 
-        Clear(olc::WHITE);
+        GetDraw().Clear(olc::Colour::WHITE);
         engine_.screen.draw(*this);
 
         auto [pc, a, d] = engine_.get_registers();
@@ -144,7 +144,7 @@ public:
         std::snprintf(status, sizeof(status),
             "PC=%04x A=%04x D=%04x  key=%3u pulse=%3u  %.0f Hz (Num +/-)  %s", pc, a, d, raw_key,
             pulse_key, speed_hz_, halted_ ? "HALTED" : "running");
-        DrawString(4, hack::SCREEN_HEIGHT + 4, status, olc::DARK_GREY);
+        GetDraw().String({4.0f, static_cast<float>(hack::SCREEN_HEIGHT + 4)}, status, olc::Colour::DARK_GREY);
 
         return true;
     }
@@ -171,11 +171,7 @@ int main(int argc, char* argv[]) {
         std::filesystem::path exe_dir = std::filesystem::absolute(argv[0]).parent_path();
 
         HackApp app(rom_path, exe_dir);
-        // olc::rcode is an unscoped enum (enum rcode { FAIL=0, OK=1, NO_FILE=-1 })
-        // declared inside namespace olc; `olc::rcode::OK` is valid C++11+ syntax
-        // for it (the header itself uses this exact form), so this compiles as
-        // written against the vendored header.
-        if (app.Construct(hack::SCREEN_WIDTH, hack::SCREEN_HEIGHT + 16, 2, 2) == olc::rcode::OK) {
+        if (app.Construct({hack::SCREEN_WIDTH, hack::SCREEN_HEIGHT + 16}, {2, 2})) {
             app.Start();
         }
     } catch (const std::exception& e) {
