@@ -7,7 +7,8 @@ original implementation and is kept unmodified alongside this one.
 ## Build
 
 Requires CMake 3.20+ and a C++20 compiler (developed against MSVC via
-Visual Studio 17 2022).
+Visual Studio 17 2022). On Linux, install development headers for X11,
+OpenGL, libpng, and XInput2 before configuring.
 
 ```powershell
 cmake -S cpp -B cpp/build -G "Visual Studio 17 2022" -A x64

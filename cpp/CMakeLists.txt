@@ -20,7 +20,7 @@ elseif(UNIX AND NOT APPLE)
     find_package(PNG REQUIRED)
     find_package(Threads REQUIRED)
     find_package(X11 REQUIRED)
-    target_link_libraries(hack_engine PUBLIC OpenGL::GL PNG::PNG Threads::Threads X11::X11)
+    target_link_libraries(hack_engine PUBLIC OpenGL::GL PNG::PNG Threads::Threads X11::X11 X11::Xi)
 endif()
 
 enable_testing()
