@@ -49,7 +49,7 @@ compiler/toolchain concern, not an emulator concern.
 
 ## Relationship to `hack_cc`
 
-`hack_cc` is a separate, sibling project: a C compiler, assembler, and its
+`hack_cc` https://github.com/pm100/hack_cc is a separate, sibling project: a C compiler, assembler, and its
 own fast Hack emulator/IDE, all written in Rust. It's where `.hackem` files
 actually get produced — `tetris.hackem` here was compiled from `tetris.c`
 (also bundled here, for reference) via `hack_cc`'s `hack_cc.exe` compiler,
