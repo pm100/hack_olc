@@ -19,6 +19,9 @@ here. It's still recoverable from git history if it's ever needed again.
   not just a demo — don't replace its contents.
 - `tetris.hackem` — a full Tetris game; the default ROM `hack_olc` runs with
   no arguments (both native and WASM builds).
+- `tetris.c` — the source `tetris.hackem` was compiled from (see
+  [Relationship to `hack_cc`](#relationship-to-hack_cc) below). Kept here for
+  reference/reproducibility; nothing in this repo builds it.
 - `tests/data/test2.hackem` — a second, smaller fixture used only by the test
   suite.
 
@@ -48,14 +51,16 @@ compiler/toolchain concern, not an emulator concern.
 
 `hack_cc` is a separate, sibling project: a C compiler, assembler, and its
 own fast Hack emulator/IDE, all written in Rust. It's where `.hackem` files
-actually get produced — `tetris.hackem` here was compiled from `hack_cc`'s
-`demo/tetris.c` via its `hack_cc.exe` compiler, not written by hand or built
-by anything in this repo.
+actually get produced — `tetris.hackem` here was compiled from `tetris.c`
+(also bundled here, for reference) via `hack_cc`'s `hack_cc.exe` compiler,
+not written by hand or built by anything in this repo.
 
 The two projects are decoupled on purpose: `hack_olc` is a Hack CPU
 implementation plus a PGE-based screen/keyboard/GUI shell around it, and only
 cares that its input is a valid `.hackem` (or `.hack`) binary. Nothing in
-`hack_olc`'s build depends on `hack_cc` being present or built. When
-`tetris.hackem` needs to be regenerated (say, after a `tetris.c` change), the
-flow is manual: compile it with `hack_cc.exe`, then copy the resulting
-`.hackem` file into this repo's root, replacing `tetris.hackem`.
+`hack_olc`'s build depends on `hack_cc` being present or built. This repo's
+`tetris.c` is a snapshot, not a synced copy — `hack_cc`'s own `demo/tetris.c`
+is the canonical, actively-developed source. When it changes and
+`tetris.hackem` needs to be regenerated, the flow is manual: compile the
+updated source with `hack_cc.exe`, then copy both the `.c` file and the
+resulting `.hackem` file into this repo's root.
