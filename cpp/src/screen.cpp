@@ -1,6 +1,6 @@
 #include "screen.hpp"
 
-#include "olcPixelGameEngine.h"
+#include "olcPixelGameEngine3.h"
 
 #include <cassert>
 
@@ -59,7 +59,7 @@ void HackScreen::draw(olc::PixelGameEngine& pge) const {
             int32_t base_x = static_cast<int32_t>(word_col * WORD_PIXELS);
             for (int bit = 0; bit < WORD_PIXELS; ++bit) {
                 if (word & (1u << bit)) {
-                    pge.Draw(base_x + bit, y, olc::BLACK);
+                    pge.GetDraw().Pixel({static_cast<float>(base_x + bit), static_cast<float>(y)}, olc::Colour::BLACK);
                 }
             }
         }

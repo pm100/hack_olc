@@ -15,6 +15,12 @@ target_include_directories(hack_engine PUBLIC src third_party)
 
 if (WIN32)
     target_link_libraries(hack_engine PUBLIC user32 gdi32 opengl32 gdiplus Shlwapi dwmapi)
+elseif(UNIX AND NOT APPLE AND NOT EMSCRIPTEN)
+    find_package(OpenGL REQUIRED)
+    find_package(PNG REQUIRED)
+    find_package(Threads REQUIRED)
+    find_package(X11 REQUIRED)
+    target_link_libraries(hack_engine PUBLIC OpenGL::GL PNG::PNG Threads::Threads X11::X11 X11::Xi)
 endif()
 
 if (EMSCRIPTEN)
@@ -33,7 +39,7 @@ add_executable(hack_olc src/main.cpp)
 target_link_libraries(hack_olc PRIVATE hack_engine)
 
 if (EMSCRIPTEN)
-    # Flags per olcPixelGameEngine.h's own Emscripten build instructions,
+    # WebGL/libpng flags for olcPixelGameEngine3's Host_Web_Emscripten backend,
     # plus preloading the bundled ROM into the virtual filesystem so the
     # no-argument fallback path in main.cpp finds it at "/tetris.hackem".
     target_link_options(hack_olc PRIVATE
@@ -43,6 +49,9 @@ if (EMSCRIPTEN)
         -sUSE_LIBPNG=1
         # Default 64KB is too small; native builds get ~1MB+ from the OS.
         -sSTACK_SIZE=5MB
+        # Host_Web_Emscripten calls emscripten_sleep() during startup, which
+        # only works in an Asyncify-compiled build.
+        -sASYNCIFY=1
         --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/../tetris.hackem@/tetris.hackem
     )
     set_target_properties(hack_olc PROPERTIES SUFFIX ".html")
