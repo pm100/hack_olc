@@ -2,4 +2,5 @@
 
 .superpowers/
 cpp/build/
+cpp/build-wasm/
 cpp/**/.vs/

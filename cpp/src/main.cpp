@@ -24,7 +24,11 @@ namespace {
 // plain tick counters rather than wall-clock delays, so they only feel
 // right if we cap how many instructions run per *real* second directly.
 // Numpad +/- double/halve it live, shown in the status line.
+#if defined(__EMSCRIPTEN__)
+constexpr float DEFAULT_HZ = 32'000'000.0f;
+#else
 constexpr float DEFAULT_HZ = 2'000'000.0f;
+#endif
 
 // Longest real time a single frame's instruction budget may span, so a
 // stall (e.g. window drag) doesn't cause a catch-up burst on the next frame.

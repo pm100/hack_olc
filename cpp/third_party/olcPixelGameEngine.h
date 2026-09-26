@@ -5719,7 +5719,10 @@ namespace olc
 
 		void ReadTexture(uint32_t id, olc::Sprite* spr) override
 		{
+#if !defined(OLC_PLATFORM_EMSCRIPTEN)
+			// glGetTexImage doesn't exist in WebGL/GLES; unsupported on this platform.
 			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, spr->GetData());
+#endif
 		}
 
 		void ApplyTexture(uint32_t id) override
@@ -6309,7 +6312,10 @@ namespace olc
 
 		void ReadTexture(uint32_t id, olc::Sprite* spr) override
 		{
+#if !defined(OLC_PLATFORM_EMSCRIPTEN)
+			// glGetTexImage doesn't exist in WebGL/GLES; unsupported on this platform.
 			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, spr->GetData());
+#endif
 		}
 
 		void ApplyTexture(uint32_t id) override
