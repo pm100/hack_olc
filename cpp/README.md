@@ -1,10 +1,9 @@
 # hack_olc (C++)
 
-Native C++ port of the Rust `hack_olc` Hack CPU emulator, now upgraded to
-olcPixelGameEngine3 directly. The Rust project at the repo root is the
-original implementation and is kept unmodified alongside this one.
+A Hack CPU emulator built against olcPixelGameEngine3 (PGE3). Builds
+natively (Windows and Linux) or as a browser WASM build via Emscripten.
 
-## Build
+## Build (native)
 
 Requires CMake 3.20+ and a C++20 compiler (developed against MSVC via
 Visual Studio 17 2022). On Linux, install development headers for X11,
@@ -29,7 +28,7 @@ built `hack_olc.exe` has a related but separate dependency: the build's
 post-build step copies `tetris.hackem` and `hello.hackem` next to the
 executable so it has a default ROM to run, plus the original demo, on hand.)
 
-## Run
+## Run (native)
 
 ```powershell
 & cpp/build/Release/hack_olc.exe [path/to/rom.hackem]
@@ -40,6 +39,37 @@ Up to rotate, Space to hard-drop, Q to quit). Pass `hello.hackem` (or any
 other `.hackem`/`.hack` ROM) explicitly to run something else. Numpad +/-
 doubles/halves the emulated clock speed live.
 
+## Build (WASM)
+
+Requires the [Emscripten SDK](https://emscripten.org/docs/getting_started/downloads.html)
+installed and activated (`emsdk install latest && emsdk activate latest`,
+then source `emsdk_env.sh`/`emsdk_env.bat` into your shell so `emcc` and
+`emcmake` are on `PATH`).
+
+```powershell
+emcmake cmake -S cpp -B cpp/build-wasm -G Ninja
+cmake --build cpp/build-wasm
+```
+
+This produces `cpp/build-wasm/hack_olc.{html,js,wasm,data}`. There's no
+separate WASM test target — the Catch2 suite only builds for native.
+
+## Run (WASM)
+
+Browsers refuse to load `.wasm` over `file://`, so it needs a real (even if
+local) HTTP server:
+
+```powershell
+python -m http.server 8000 --directory cpp/build-wasm
+```
+
+Then open `http://localhost:8000/hack_olc.html`. There's no argv in a
+browser, so it always runs the bundled `tetris.hackem` (preloaded into the
+virtual filesystem at build time) — same controls as native. Expect it to
+run visibly slower than native at the same emulated Hz, since Emscripten
+interprets/JITs instead of running native x86; `DEFAULT_HZ` is set higher
+for this build specifically to compensate (see `main.cpp`).
+
 ## Error Handling
 
 Two distinct exception types are in play, and a caller wanting to catch
@@ -48,23 +78,6 @@ both needs two catch clauses: runtime CPU errors from `HackEngine::step`
 `execute_count`), `get_ram`, and `set_ram` throw `hack::HackRuntimeError`;
 `HackEngine::load_file` throws plain `std::runtime_error` on malformed ROM
 data.
-
-## Known Issues
-
-GUI rendering has not been visually confirmed working on any machine
-tried so far. On every development machine tried to date (including one
-with an Intel UHD 630 + a DisplayLink USB display adapter installed
-system-wide), the built application's window opens and runs correctly
-internally — the CPU executes, produces the correct screen buffer, and
-reaches HALTED as expected — but the window's client area renders solid
-white with no visible pixels. This is believed to be a
-graphics-driver/OpenGL-compatibility issue in the vendored
-`olcPixelGameEngine3.h`, not a defect in the ported emulator logic.
-Correctness of the emulator core itself is established only via the
-automated test suite and direct engine-state inspection — not via visual
-confirmation of the rendered window. If you hit this, try a different
-GPU/monitor/driver, or treat it as a follow-up investigation into
-`pge_impl.cpp`'s WGL/OpenGL context setup.
 
 ## Layout
 
