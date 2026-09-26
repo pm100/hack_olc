@@ -25,8 +25,8 @@ from the repo root at run time, via a configure-time `HACK_OLC_REPO_ROOT`
 path baked into the test binary. This means moving `cpp/` out of the repo,
 or moving the whole repo after configuring, will break the tests. (The
 built `hack_olc.exe` has a related but separate dependency: the build's
-post-build step copies `hello.hackem` next to the executable so it has a
-default ROM to run.)
+post-build step copies `tetris.hackem` and `hello.hackem` next to the
+executable so it has a default ROM to run, plus the original demo, on hand.)
 
 ## Run
 
@@ -34,8 +34,10 @@ default ROM to run.)
 & cpp/build/Release/hack_olc.exe [path/to/rom.hackem]
 ```
 
-With no argument, runs the bundled `hello.hackem`. Numpad +/- doubles/halves
-the emulated clock speed live.
+With no argument, runs the bundled `tetris.hackem` (arrow keys to move,
+Up to rotate, Space to hard-drop, Q to quit). Pass `hello.hackem` (or any
+other `.hackem`/`.hack` ROM) explicitly to run something else. Numpad +/-
+doubles/halves the emulated clock speed live.
 
 ## Error Handling
 

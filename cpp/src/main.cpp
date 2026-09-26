@@ -68,14 +68,14 @@ std::string read_file_to_string(const std::filesystem::path& path) {
 class HackApp : public olc::PixelGameEngine {
 public:
     /// `rom_path` is a path to a .hx/.hackem or raw .hack binary; falls back
-    /// to hello.hackem next to the executable when absent.
+    /// to tetris.hackem next to the executable when absent.
     HackApp(const std::optional<std::string>& rom_path, std::filesystem::path exe_dir)
         : exe_dir_(std::move(exe_dir)) {
         sAppName = "hack_olc";
 
         std::string source = rom_path.has_value()
             ? read_file_to_string(*rom_path)
-            : read_file_to_string(exe_dir_ / "hello.hackem");
+            : read_file_to_string(exe_dir_ / "tetris.hackem");
         engine_.load_file(source);
     }
 

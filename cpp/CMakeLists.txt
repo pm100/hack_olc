@@ -35,7 +35,7 @@ target_link_libraries(hack_olc PRIVATE hack_engine)
 if (EMSCRIPTEN)
     # Flags per olcPixelGameEngine.h's own Emscripten build instructions,
     # plus preloading the bundled ROM into the virtual filesystem so the
-    # no-argument fallback path in main.cpp finds it at "/hello.hackem".
+    # no-argument fallback path in main.cpp finds it at "/tetris.hackem".
     target_link_options(hack_olc PRIVATE
         -sALLOW_MEMORY_GROWTH=1
         -sMAX_WEBGL_VERSION=2
@@ -43,11 +43,14 @@ if (EMSCRIPTEN)
         -sUSE_LIBPNG=1
         # Default 64KB is too small; native builds get ~1MB+ from the OS.
         -sSTACK_SIZE=5MB
-        --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/../hello.hackem@/hello.hackem
+        --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/../tetris.hackem@/tetris.hackem
     )
     set_target_properties(hack_olc PROPERTIES SUFFIX ".html")
 else()
     add_custom_command(TARGET hack_olc POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CMAKE_CURRENT_SOURCE_DIR}/../tetris.hackem
+            $<TARGET_FILE_DIR:hack_olc>/tetris.hackem
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             ${CMAKE_CURRENT_SOURCE_DIR}/../hello.hackem
             $<TARGET_FILE_DIR:hack_olc>/hello.hackem
